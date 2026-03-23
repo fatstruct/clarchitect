@@ -1,7 +1,43 @@
 # {{.ProjectName}}
 
-Module: {{.GoModule}}
+Go + Chi router. Module: `{{.GoModule}}`.
 
-## Stack
+## Architecture
 
-Go + Chi Router
+```
+cmd/
+└── server/         # Application entry point (main.go)
+internal/
+├── handler/        # HTTP handlers — parse request, call service, write response
+├── service/        # Business logic — orchestration, rules, validation
+├── repository/     # Data access — database queries, external clients
+├── middleware/      # HTTP middleware (auth, logging, recovery)
+├── model/          # Domain types, DTOs
+└── config/         # Configuration loading (env vars, flags)
+```
+
+- **Layered flow**: Handler → Service → Repository. Dependencies flow downward only.
+- Handlers are thin: decode request, call service, encode response. No business logic.
+- Services contain business rules. They accept and return domain types, never `http.Request`.
+- Repositories own data access and return domain types, not database-specific types.
+
+## Commands
+
+```bash
+go build ./cmd/server           # Build the server binary
+go run ./cmd/server              # Run the server
+go test ./...                    # Run all tests
+go test -race ./...              # Run tests with race detector
+go vet ./...                     # Static analysis
+go fmt ./...                     # Format all code
+golangci-lint run                # Lint (if configured)
+```
+
+## Key Decisions
+
+- **Accept interfaces, return structs**: Function parameters use interfaces for flexibility; return concrete types for clarity.
+- **Context-first**: Every function that does I/O or may be cancelled takes `ctx context.Context` as its first parameter.
+- **Logging**: Use `slog` (structured logging from stdlib). Pass the logger via context or struct field — no global loggers.
+- **Errors**: Wrap errors with `fmt.Errorf("doing X: %w", err)` to build a clear chain. Define sentinel errors for known failure modes.
+- **Configuration**: Load from environment variables. Parse at startup in `cmd/`, pass config struct down. No env reads inside business logic.
+- **Dependency injection**: Constructor functions that accept interfaces. No DI framework. Wire everything in `main()`.

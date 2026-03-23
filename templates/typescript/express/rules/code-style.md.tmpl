@@ -1,4 +1,33 @@
 # Code Style — {{.ProjectName}}
 
-- Use TypeScript strict mode
-- Package manager: {{.PackageManager}}
+## TypeScript
+
+- Strict mode always: `strict: true` in tsconfig with no overrides
+- Named exports only — no default exports
+- Use `type` aliases over `interface` for DTOs and function signatures
+- Avoid enums; prefer `as const` objects or string literal unions
+- Use `satisfies` for type-safe constant definitions
+
+## File Naming
+
+- **kebab-case** for all files and directories: `user-profile.route.ts`, `auth.middleware.ts`
+- Suffix files by layer: `.route.ts`, `.service.ts`, `.repository.ts`, `.middleware.ts`, `.schema.ts`
+- One primary export per file; colocate related types in the same file
+
+## Validation
+
+- Zod schemas live alongside the route that uses them (e.g., `user.route.ts` and `user.schema.ts` in the same directory)
+- Extract shared schemas (pagination, ID params) to `src/types/schemas/`
+- Infer TypeScript types from Zod schemas with `z.infer<typeof schema>` — don't duplicate types manually
+
+## Error Handling
+
+- Throw `AppError` for expected errors (validation failures, not-found, auth failures)
+- Let unexpected errors propagate to the global error handler unmodified
+- Never return error responses directly from route handlers — always throw and let middleware handle it
+
+## Functions
+
+- Keep functions pure when possible — especially services and utilities
+- Dependency injection via constructor parameters, not module-level singletons
+- Prefer early returns to reduce nesting

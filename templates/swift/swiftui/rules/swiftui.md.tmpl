@@ -1,4 +1,40 @@
 # SwiftUI Conventions — {{.ProjectName}}
 
-- Target iOS {{.MinIOSVersion}}+
-- Bundle ID: {{.BundleID}}
+## Views
+
+- Views are functions of state — no side effects in the `body` property
+- Extract subviews when `body` exceeds ~40 lines; prefer computed properties for simple extractions
+- Use `@State` for view-local state, `@Bindable` for ViewModel bindings, `@Environment` for injected dependencies
+- Never put business logic in a View — delegate to the ViewModel
+
+## Observation
+
+- Use `@Observable` (Observation framework) for all new ViewModels — not `ObservableObject` / `@Published`
+- Mark stored properties that shouldn't trigger updates with `@ObservationIgnored`
+- Pass ViewModels to child views as parameters, not through `@Environment` (unless truly app-wide)
+
+## Lifecycle
+
+- Use `.task` for async work on appear, not `.onAppear` — `.task` handles cancellation automatically
+- Use `.task(id:)` when async work should restart when a value changes
+- Prefer `.onChange(of:)` over manual state diffing for reacting to state changes
+
+## Accessibility
+
+- Every interactive element must have an accessibility label
+- Use `.accessibilityLabel()` for custom labels, `.accessibilityHint()` for non-obvious actions
+- Test with VoiceOver in Simulator to verify navigation flow
+- Group related elements with `.accessibilityElement(children: .combine)` where appropriate
+
+## Animation
+
+- Prefer implicit animations with `.animation(.default, value:)` scoped to specific state changes
+- Use `withAnimation` only for coordinated multi-view transitions
+- Keep durations under 0.35s for UI state changes; use spring animations for interactive gestures
+- Always provide `.contentTransition(.numericText())` for animated number changes
+
+## Layout
+
+- Prefer `LazyVStack`/`LazyHStack` inside `ScrollView` for long lists over `List` when custom styling is needed
+- Use `ViewThatFits` for adaptive layouts before reaching for `GeometryReader`
+- Avoid `GeometryReader` in scrollable content — it causes layout thrashing

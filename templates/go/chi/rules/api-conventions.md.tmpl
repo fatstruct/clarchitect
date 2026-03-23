@@ -1,4 +1,54 @@
 # API Conventions — {{.ProjectName}}
 
-- Module: {{.GoModule}}
-- Use chi router for HTTP routing
+## URL Design
+
+- RESTful resource naming: `/api/v1/users`, `/api/v1/users/{id}/orders`
+- Plural nouns for collections, never verbs in URLs
+- Use URL path parameters for resource identity, query parameters for filtering/pagination
+- Cursor-based pagination: `?cursor=<opaque>&limit=20`. Return `next_cursor` in response.
+
+## Handler Pattern
+
+Handlers are methods on a struct that holds dependencies:
+
+```go
+type UserHandler struct {
+    userService UserService
+    logger      *slog.Logger
+}
+
+func NewUserHandler(us UserService, log *slog.Logger) *UserHandler {
+    return &UserHandler{userService: us, logger: log}
+}
+
+func (h *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+    id := chi.URLParam(r, "id")
+    user, err := h.userService.GetByID(r.Context(), id)
+    if err != nil {
+        respondError(w, r, err)
+        return
+    }
+    respondJSON(w, r, http.StatusOK, user)
+}
+```
+
+## Response Helpers
+
+- `respondJSON(w, r, status, data)` — marshal and write `{"data": T}` with correct headers
+- `respondError(w, r, err)` — map error to status code, write `{"error": {"code": "...", "message": "..."}}`
+- Never write to `http.ResponseWriter` directly in handlers — always use helpers
+
+## Middleware Chain Order
+
+1. `middleware.RequestID` — assign unique request ID
+2. `middleware.RealIP` — extract client IP
+3. `middleware.Logger` — structured request logging
+4. `middleware.Recoverer` — panic recovery
+5. `middleware.Timeout` — request timeout
+6. Custom auth middleware (per-route group)
+
+## IDs
+
+- Use string UUIDs (`google/uuid`) for all resource identifiers
+- Generate at the application layer, not the database
+- Accept and return as strings in JSON — never expose integer IDs

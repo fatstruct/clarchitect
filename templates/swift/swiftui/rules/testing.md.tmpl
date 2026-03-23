@@ -1,4 +1,44 @@
 # Testing — {{.ProjectName}}
 
-- Use XCTest framework
-- Target iOS {{.MinIOSVersion}}+
+## Framework
+
+- Use **Swift Testing** (`import Testing`) with `@Test` and `#expect` — not XCTest for new tests
+- Organize tests with `@Suite` structs that mirror the module being tested
+- Use `@Test("description")` with human-readable descriptions for every test
+
+## Conventions
+
+- Name tests after behavior: `@Test("rejects expired authentication tokens")` not `@Test("testValidate")`
+- One `#expect` per test when possible; multiple expectations are fine for a single logical behavior
+- Test ViewModels, not Views — verify state changes and outputs, not pixel layout
+- Never test private methods directly; test through the public API
+
+## Mocking
+
+- Define protocols for all service dependencies (e.g., `protocol UserServiceProtocol`)
+- Create mock implementations in test targets: `struct MockUserService: UserServiceProtocol`
+- Inject mocks via ViewModel initializers — the same DI pattern used in production
+
+```swift
+@Test("loads users on appear")
+func loadsUsers() async {
+    let mock = MockUserService(users: [.sample])
+    let vm = UserListViewModel(userService: mock)
+
+    await vm.loadUsers()
+
+    #expect(vm.users.count == 1)
+    #expect(mock.loadUsersCalled)
+}
+```
+
+## Async Testing
+
+- Use `async` test functions for testing async ViewModel methods
+- Use `confirmation()` for testing that expected callbacks or events fire
+- Set reasonable timeouts for async operations with `.timeLimit(.seconds(5))`
+
+## Structure
+
+- Test files go in the test target mirroring source structure: `ViewModels/UserListViewModel.swift` → `ViewModels/UserListViewModelTests.swift`
+- Shared test fixtures and mocks live in a `TestSupport/` directory within the test target

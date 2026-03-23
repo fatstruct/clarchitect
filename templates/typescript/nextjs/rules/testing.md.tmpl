@@ -1,4 +1,28 @@
 # Testing — {{.ProjectName}}
 
-- Use the project's test runner
-- Node version: {{.NodeVersion}}
+## Framework
+
+- **Test runner**: Vitest with `@vitejs/plugin-react`
+- **Component testing**: Testing Library (`@testing-library/react`) — test what users see, not implementation
+- **User events**: Use `@testing-library/user-event` over `fireEvent` for realistic interaction simulation
+
+## Conventions
+
+- Name tests after behavior: `it("shows error message when email is invalid")` not `it("test validation")`
+- One assertion per test when possible; multiple assertions only when testing a single logical behavior
+- No snapshot tests — they're brittle, noisy, and rarely catch real bugs
+- Group related tests with `describe` blocks that read like documentation
+
+## Patterns
+
+- Mock external dependencies at the boundary (API clients, database, third-party services) — never mock internal modules
+- Use `vi.mock()` at the top of test files for module-level mocking
+- Test Server Components by testing the rendered output, not the data fetching
+- Test client components with user-event interactions and screen queries
+- Prefer `getByRole` and `getByLabelText` over `getByTestId` — test accessibility, not implementation
+
+## Structure
+
+- Test files live next to the code they test: `UserProfile.tsx` → `UserProfile.test.tsx`
+- Shared test utilities go in `src/test/` (factories, custom render, mocks)
+- Each test file should be self-contained — never depend on execution order

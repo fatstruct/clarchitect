@@ -1,4 +1,40 @@
 # Testing — {{.ProjectName}}
 
-- Use the project's test runner
-- Node version: {{.NodeVersion}}
+## Framework
+
+- **Test runner**: Vitest
+- **HTTP integration**: `supertest` for testing routes end-to-end against the Express app
+- **Mocking**: `vi.mock()` for module-level mocks, `vi.fn()` for individual function stubs
+
+## Conventions
+
+- Name tests after behavior: `it("returns 404 when user does not exist")` not `it("test getUser")`
+- One logical assertion per test; multiple `expect` calls are fine if they verify one behavior
+- No snapshot tests
+- `describe` blocks mirror the module being tested: `describe("UserService")`, `describe("POST /users")`
+
+## Integration Tests (Routes)
+
+- Use `supertest` to test the full middleware chain: validation → auth → handler → response
+- Create a test app instance with mocked services injected — don't test against a real database
+- Assert on status codes, response body shape, and headers
+
+```typescript
+const res = await request(app)
+  .post("/api/users")
+  .send({ email: "test@example.com" })
+  .expect(201);
+
+expect(res.body.data).toHaveProperty("id");
+```
+
+## Unit Tests (Services)
+
+- Mock at service boundaries: mock the repository, not the database driver
+- Test business rules directly: given these inputs and this mocked data, expect this output
+- Inject mocks via constructor — avoid `vi.mock()` for service dependencies when possible
+
+## Structure
+
+- Test files live next to their source: `user.service.ts` → `user.service.test.ts`
+- Shared test helpers in `src/test/` (factories, test app builder, mock generators)

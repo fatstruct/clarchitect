@@ -1,7 +1,38 @@
-# CLAUDE.md
+# Global Rules — {{.AuthorName}}
 
-Author: {{.AuthorName}}
+## General Principles
 
-## Testing Philosophy
+- Favor composition over inheritance; build behavior from small, focused pieces
+- Write pure functions where possible — explicit inputs, explicit outputs, no hidden state
+- Use strict typing everywhere; avoid `any`, `id`, or `interface{}` unless absolutely necessary
+- DRY for logic, but don't abstract prematurely — duplication is cheaper than the wrong abstraction
+- Keep functions under ~30 lines; if it scrolls, split it
+- Comments explain **why**, not **what** — the code is the what
 
-{{.PreferredTestStyle}}
+## Error Handling
+
+- Handle errors explicitly at every level; never swallow errors silently
+- Use typed/structured errors, not raw strings, so callers can match on error kind
+- Error messages must be actionable: include what failed, why, and what the user/caller can do
+
+## Testing
+
+- Approach: {{.PreferredTestStyle}}
+- Cover the happy path first, then edge cases and error paths
+- Name tests after behavior, not methods: `"rejects expired tokens"` over `"testValidate3"`
+- Tests are documentation — a new developer should understand the feature by reading the tests
+- Never test implementation details; test observable behavior and outputs
+
+## Git
+
+- Use conventional commits: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`
+- Each commit should be atomic — one logical change per commit
+- Never commit secrets, credentials, or environment files
+- Write commit messages that explain **why** the change was made, not just what changed
+
+## Code Review Mindset
+
+- Readability beats cleverness; optimize for the next person reading the code
+- Ask before changing architecture — clarify intent with a question before rewriting
+- Prefer small, focused changes over large sweeping refactors
+- When in doubt, leave a comment explaining your reasoning rather than making a silent choice

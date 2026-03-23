@@ -1,4 +1,58 @@
 # Testing — {{.ProjectName}}
 
-- Use the standard library testing package
-- Module: {{.GoModule}}
+## Framework
+
+- Use the standard library `testing` package
+- Use `httptest.NewServer` and `httptest.NewRecorder` for handler tests
+- `testify/assert` and `testify/require` are allowed for cleaner assertions but not required
+
+## Table-Driven Tests
+
+Prefer table-driven tests for functions with multiple input/output cases:
+
+```go
+func TestParseAge(t *testing.T) {
+    tests := []struct {
+        name    string
+        input   string
+        want    int
+        wantErr bool
+    }{
+        {name: "valid age", input: "25", want: 25},
+        {name: "negative age", input: "-1", wantErr: true},
+        {name: "non-numeric", input: "abc", wantErr: true},
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got, err := ParseAge(tt.input)
+            if tt.wantErr {
+                require.Error(t, err)
+                return
+            }
+            require.NoError(t, err)
+            assert.Equal(t, tt.want, got)
+        })
+    }
+}
+```
+
+## Handler Tests
+
+- Use `httptest.NewRecorder` for unit-testing individual handlers
+- Inject mock services into the handler struct — test the HTTP layer in isolation
+- Assert on status code, response body, and content-type header
+
+## Mocking
+
+- Mock at interface boundaries: define a mock struct that implements the service interface
+- Keep mocks in the test file or a `_test.go` file in the same package
+- For complex mocks, use `github.com/stretchr/testify/mock` or hand-rolled structs with call tracking
+
+## Conventions
+
+- Name tests descriptively: `TestGetUser_ReturnsNotFound_WhenUserDoesNotExist`
+- Use `t.Helper()` in test utility functions so failures report the caller's line
+- Run tests with `-race` in CI to catch data races
+- Use `t.Parallel()` for independent tests to speed up the suite
+- Test files are `*_test.go` in the same package as the code they test

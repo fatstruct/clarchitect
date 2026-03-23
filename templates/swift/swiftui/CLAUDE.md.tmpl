@@ -1,8 +1,40 @@
 # {{.ProjectName}}
 
-Bundle ID: {{.BundleID}}
-Minimum iOS Version: {{.MinIOSVersion}}
+Swift + SwiftUI targeting iOS {{.MinIOSVersion}}+. Bundle ID: `{{.BundleID}}`.
 
-## Stack
+## Architecture (MVVM)
 
-Swift + SwiftUI (iOS)
+```
+{{.ProjectName}}/
+├── Views/          # SwiftUI views — pure UI, no business logic
+├── ViewModels/     # @Observable classes — state, logic, data transformation
+├── Models/         # Domain types, DTOs, Codable structs
+├── Services/       # Network layer, persistence, external integrations
+└── Navigation/     # NavigationPath-based centralized routing
+```
+
+- **Views** are functions of state — they read from ViewModels, never mutate data directly
+- **ViewModels** own the state and business logic. One ViewModel per feature screen.
+- **Services** are protocol-defined and injected into ViewModels — never instantiated inside VMs
+- **Navigation** is centralized via `NavigationPath` with a typed route enum
+
+## Commands
+
+```bash
+# Build
+xcodebuild -scheme {{.ProjectName}} -destination 'platform=iOS Simulator,name=iPhone 16' build
+
+# Test
+xcodebuild -scheme {{.ProjectName}} -destination 'platform=iOS Simulator,name=iPhone 16' test
+
+# SwiftLint (if configured)
+swiftlint lint --strict
+```
+
+## Key Decisions
+
+- **Concurrency**: Use `async/await` with structured concurrency. Avoid Combine for new code — use `AsyncSequence` and `AsyncStream` instead.
+- **Dependency injection**: Protocol-based. Define protocols in `Services/`, inject via ViewModel initializers. Use `@Environment` for SwiftUI-level DI.
+- **Navigation**: Centralized `NavigationPath` with a `Route` enum. Views never create `NavigationLink` destinations directly — they push routes.
+- **Networking**: `URLSession` with async/await. Decode with `JSONDecoder`. Define request/response types as `Codable` structs in `Models/`.
+- **State ownership**: ViewModels are `@Observable`. Views observe them with `@State` or `@Bindable`. No `@Published` / `ObservableObject` in new code.

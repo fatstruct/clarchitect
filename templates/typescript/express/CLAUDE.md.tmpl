@@ -1,8 +1,48 @@
 # {{.ProjectName}}
 
-Node: {{.NodeVersion}}
-Package Manager: {{.PackageManager}}
+TypeScript + Express API on Node {{.NodeVersion}}, managed with {{.PackageManager}}.
 
-## Stack
+## Architecture
 
-TypeScript + Express API
+```
+src/
+├── routes/       # Express route handlers — thin, delegate to services
+├── services/     # Business logic — orchestration, rules, transformations
+├── repositories/ # Data access — database queries, external API clients
+├── middleware/    # Express middleware (auth, validation, error handling)
+├── types/        # Shared TypeScript types and Zod schemas
+└── utils/        # Pure utility functions (no side effects)
+```
+
+- **Layered flow**: Routes → Services → Repositories. Dependencies only flow downward.
+- Routes are thin: validate input, call a service, format the response. No business logic.
+- Services contain all business rules. They never touch `req` or `res` directly.
+- Repositories own data access. Return plain objects, not ORM-specific types.
+
+## Middleware Chain
+
+Request flows through middleware in this order:
+1. CORS / Helmet / compression
+2. Body parsing (`express.json()`)
+3. Request logging
+4. Authentication (sets `req.user`)
+5. Route handler
+6. Global error handler (catches all thrown/next'd errors)
+
+## Commands
+
+```bash
+{{.PackageManager}} dev          # Start with hot-reload (tsx watch)
+{{.PackageManager}} build        # Compile TypeScript to dist/
+{{.PackageManager}} start        # Run compiled output
+{{.PackageManager}} lint         # Run ESLint
+{{.PackageManager}} test         # Run tests (Vitest)
+{{.PackageManager}} test --watch # Run tests in watch mode
+```
+
+## Key Patterns
+
+- **Request validation**: Zod schemas colocated with route files. Validate `req.body`, `req.params`, and `req.query` at the route layer.
+- **Typed errors**: Use a custom `AppError` class with `statusCode`, `code`, and `message`. The global error handler maps `AppError` to HTTP responses.
+- **Async handler**: Wrap route handlers with `asyncHandler()` so rejected promises are automatically forwarded to the error handler — no try/catch in routes.
+- **Response format**: All JSON responses use `{ data: T }` for success and `{ error: { code, message } }` for errors. No bare values.

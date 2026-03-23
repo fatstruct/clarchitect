@@ -1,4 +1,29 @@
 # Code Style — {{.ProjectName}}
 
-- Use TypeScript strict mode
-- Package manager: {{.PackageManager}}
+## TypeScript
+
+- Strict mode is non-negotiable: `strict: true` in tsconfig with no escape hatches
+- Use `type` aliases for component props, not `interface` — interfaces invite extension, props should be explicit
+- Prefer named exports over default exports everywhere (except Next.js pages/layouts which require defaults)
+- Use `satisfies` for type-safe object literals instead of type assertions
+- Avoid enums; use `as const` objects or string literal unions
+
+## Components
+
+- One component per file; file name matches component name in PascalCase
+- Props type is defined directly above the component in the same file
+- Destructure props in the function signature: `function Button({ variant, children }: ButtonProps)`
+- Colocate hooks, helpers, and sub-components in the same file if they're only used there
+
+## Styling
+
+- Tailwind CSS only — no CSS modules, no styled-components, no inline `style` props
+- Use `cn()` utility (clsx + tailwind-merge) for conditional class composition
+- Extract repeated class combinations into component variants, not utility classes
+- Responsive design: mobile-first with Tailwind breakpoint prefixes (`sm:`, `md:`, `lg:`)
+
+## File Organization
+
+- kebab-case for directories and non-component files
+- PascalCase for component files: `UserProfile.tsx`
+- Barrel exports (`index.ts`) only for `components/ui/` — avoid them elsewhere to keep tree-shaking clean

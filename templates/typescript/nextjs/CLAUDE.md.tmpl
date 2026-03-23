@@ -1,9 +1,38 @@
 # {{.ProjectName}}
 
-Node: {{.NodeVersion}}
-Package Manager: {{.PackageManager}}
-Next.js: {{.NextVersion}}
+TypeScript + Next.js {{.NextVersion}} on Node {{.NodeVersion}}, managed with {{.PackageManager}}.
 
-## Stack
+## Architecture
 
-TypeScript + Next.js
+```
+src/
+├── app/          # App Router — layouts, pages, route handlers
+├── components/   # React components (ui/ for primitives, features/ for domain)
+├── lib/          # Shared utilities, constants, client-side helpers
+├── server/       # Server-only code: actions, data fetching, auth
+└── types/        # Shared TypeScript type definitions
+```
+
+- Server Components by default; add `"use client"` only when you need interactivity or browser APIs
+- Colocate server actions in `src/server/actions/` — never define actions inline in components
+- Data fetching happens in Server Components or server actions, never in client components directly
+
+## Commands
+
+```bash
+{{.PackageManager}} dev          # Start development server
+{{.PackageManager}} build        # Production build
+{{.PackageManager}} start        # Start production server
+{{.PackageManager}} lint         # Run ESLint
+{{.PackageManager}} test         # Run tests (Vitest)
+{{.PackageManager}} test --watch # Run tests in watch mode
+```
+
+## Key Decisions
+
+- **RSC-first**: Default to Server Components. Only use client components for state, effects, or event handlers.
+- **Validation**: Use Zod for all runtime validation — form inputs, API responses, env vars
+- **Imports**: Use absolute imports via `@/` prefix (maps to `src/`). Never use relative imports that go up more than one level.
+- **Styling**: Tailwind CSS only. No CSS modules, styled-components, or inline style objects.
+- **State management**: Use React's built-in state (`useState`, `useReducer`, `useContext`). No Redux or Zustand unless the data problem genuinely demands it.
+- **Forms**: Use server actions with `useActionState` for form submissions. Validate with Zod on both client and server.
