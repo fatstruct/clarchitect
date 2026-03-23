@@ -43,10 +43,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	case "global":
 		return runGlobal(args[1:], stdout, stderr)
 	case "project":
-		if err := runProjectE(args[1:], stdout, stderr, ""); err != nil {
-			return 1
-		}
-		return 0
+		return runProject(args[1:], stdout, stderr)
 	default:
 		fmt.Fprintf(stderr, "Error: unknown command %q\n\n", args[0])
 		printHelp(stderr)
@@ -244,6 +241,116 @@ func allVariantKeys() []string {
 	}
 	sort.Strings(keys)
 	return keys
+}
+
+// runProject dispatches the project command to interactive or non-interactive mode.
+func runProject(args []string, stdout, stderr io.Writer) int {
+	if isTerminal() {
+		// Check if a variant argument is provided (first arg that doesn't start with "-")
+		var variantArg string
+		if len(args) > 0 && !strings.HasPrefix(args[0], "-") {
+			variantArg = args[0]
+		}
+
+		if variantArg != "" {
+			// Variant provided — look it up, launch TUI with variables only
+			variant, ok := registry.LookupVariant(variantArg)
+			if !ok {
+				fmt.Fprintf(stderr, "Error: unknown variant %q\n", variantArg)
+				fmt.Fprintln(stderr, "")
+				fmt.Fprintln(stderr, "Available variants:")
+				for _, k := range allVariantKeys() {
+					fmt.Fprintf(stderr, "  %s\n", k)
+				}
+				return 1
+			}
+
+			// Check if flags were provided alongside the variant (non-interactive)
+			hasFlags := false
+			for _, a := range args[1:] {
+				if strings.HasPrefix(a, "-") {
+					hasFlags = true
+					break
+				}
+			}
+
+			if hasFlags {
+				// Flags provided — use non-interactive mode
+				if err := runProjectE(args, stdout, stderr, ""); err != nil {
+					return 1
+				}
+				return 0
+			}
+
+			return runProjectInteractive(variant, stderr)
+		}
+
+		// No variant — launch full interactive flow with selection
+		return runProjectInteractiveSelection(stderr)
+	}
+
+	// Non-interactive flag-based mode
+	if err := runProjectE(args, stdout, stderr, ""); err != nil {
+		return 1
+	}
+	return 0
+}
+
+// runProjectInteractive launches the Bubbletea TUI for the project command
+// with a pre-selected variant (skips stack/variant selection).
+func runProjectInteractive(variant registry.Variant, stderr io.Writer) int {
+	outputDir, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintf(stderr, "Error: could not determine working directory: %v\n", err)
+		return 1
+	}
+
+	eng := engine.New(templates.FS, ".")
+	if err := eng.ParseTemplates(); err != nil {
+		fmt.Fprintf(stderr, "Error: failed to parse templates: %v\n", err)
+		return 1
+	}
+
+	model := tui.NewProjectFormWithVariant(variant, eng, outputDir)
+	p := tea.NewProgram(model)
+	if _, err := p.Run(); err != nil {
+		fmt.Fprintf(stderr, "Error: %v\n", err)
+		return 1
+	}
+	return 0
+}
+
+// runProjectInteractiveSelection launches the Bubbletea TUI for the project
+// command starting with stack selection.
+func runProjectInteractiveSelection(stderr io.Writer) int {
+	outputDir, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintf(stderr, "Error: could not determine working directory: %v\n", err)
+		return 1
+	}
+
+	eng := engine.New(templates.FS, ".")
+	if err := eng.ParseTemplates(); err != nil {
+		fmt.Fprintf(stderr, "Error: failed to parse templates: %v\n", err)
+		return 1
+	}
+
+	// Collect project stacks (exclude "global")
+	var projectStacks []registry.Stack
+	for _, s := range registry.AllStacks() {
+		if s.Key == "global" {
+			continue
+		}
+		projectStacks = append(projectStacks, s)
+	}
+
+	model := tui.NewProjectForm(projectStacks, eng, outputDir)
+	p := tea.NewProgram(model)
+	if _, err := p.Run(); err != nil {
+		fmt.Fprintf(stderr, "Error: %v\n", err)
+		return 1
+	}
+	return 0
 }
 
 // runProjectE is the testable core of the project command.
