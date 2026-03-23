@@ -72,14 +72,14 @@ This generates a `CLAUDE.md` and `.claude/rules/*.md` files in the current direc
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `clarchitect global` | Set up `~/.claude/CLAUDE.md` with your coding identity |
-| `clarchitect project` | Interactive stack/variant selection + variable prompts |
-| `clarchitect project <variant>` | Generate rules for a specific variant |
-| `clarchitect list` | Show all available stacks and variants |
-| `clarchitect version` | Print version |
-| `clarchitect help` | Show help |
+| Command                         | Description                                            |
+| ------------------------------- | ------------------------------------------------------ |
+| `clarchitect global`            | Set up `~/.claude/CLAUDE.md` with your coding identity |
+| `clarchitect project`           | Interactive stack/variant selection + variable prompts |
+| `clarchitect project <variant>` | Generate rules for a specific variant                  |
+| `clarchitect list`              | Show all available stacks and variants                 |
+| `clarchitect version`           | Print version                                          |
+| `clarchitect help`              | Show help                                              |
 
 ### Interactive Mode
 
@@ -141,10 +141,10 @@ Use `--force` to overwrite existing files without prompting.
 
 Sets up `~/.claude/CLAUDE.md` with language-agnostic engineering principles.
 
-| Variable | Flag | Required | Default |
-|----------|------|----------|---------|
-| Author name | `--author-name` | Yes | — |
-| Testing philosophy | `--preferred-test-style` | No | `test alongside implementation` |
+| Variable           | Flag                     | Required | Default                         |
+| ------------------ | ------------------------ | -------- | ------------------------------- |
+| Author name        | `--author-name`          | Yes      | —                               |
+| Testing philosophy | `--preferred-test-style` | No       | `test alongside implementation` |
 
 **Generates:** General principles, error handling, testing philosophy, git conventions, code review mindset.
 
@@ -156,12 +156,12 @@ Sets up `~/.claude/CLAUDE.md` with language-agnostic engineering principles.
 clarchitect project typescript-nextjs
 ```
 
-| Variable | Flag | Required | Default |
-|----------|------|----------|---------|
-| Project name | `--project-name` | Yes | — |
-| Node.js version | `--node-version` | No | `22` |
-| Package manager | `--package-manager` | No | `pnpm` |
-| Next.js version | `--next-version` | No | `15` |
+| Variable        | Flag                | Required | Default |
+| --------------- | ------------------- | -------- | ------- |
+| Project name    | `--project-name`    | Yes      | —       |
+| Node.js version | `--node-version`    | No       | `22`    |
+| Package manager | `--package-manager` | No       | `pnpm`  |
+| Next.js version | `--next-version`    | No       | `15`    |
 
 **Generates:**
 | File | Content |
@@ -178,11 +178,11 @@ clarchitect project typescript-nextjs
 clarchitect project typescript-express
 ```
 
-| Variable | Flag | Required | Default |
-|----------|------|----------|---------|
-| Project name | `--project-name` | Yes | — |
-| Node.js version | `--node-version` | No | `22` |
-| Package manager | `--package-manager` | No | `pnpm` |
+| Variable        | Flag                | Required | Default |
+| --------------- | ------------------- | -------- | ------- |
+| Project name    | `--project-name`    | Yes      | —       |
+| Node.js version | `--node-version`    | No       | `22`    |
+| Package manager | `--package-manager` | No       | `pnpm`  |
 
 **Generates:**
 | File | Content |
@@ -199,11 +199,11 @@ clarchitect project typescript-express
 clarchitect project swift-swiftui
 ```
 
-| Variable | Flag | Required | Default |
-|----------|------|----------|---------|
-| Project name | `--project-name` | Yes | — |
-| Bundle identifier | `--bundle-id` | Yes | — |
-| Min iOS version | `--min-ios-version` | No | `17` |
+| Variable          | Flag                | Required | Default |
+| ----------------- | ------------------- | -------- | ------- |
+| Project name      | `--project-name`    | Yes      | —       |
+| Bundle identifier | `--bundle-id`       | Yes      | —       |
+| Min iOS version   | `--min-ios-version` | No       | `17`    |
 
 **Generates:**
 | File | Content |
@@ -220,10 +220,10 @@ clarchitect project swift-swiftui
 clarchitect project go-chi
 ```
 
-| Variable | Flag | Required | Default |
-|----------|------|----------|---------|
-| Project name | `--project-name` | Yes | — |
-| Go module path | `--go-module` | Yes | — |
+| Variable       | Flag             | Required | Default |
+| -------------- | ---------------- | -------- | ------- |
+| Project name   | `--project-name` | Yes      | —       |
+| Go module path | `--go-module`    | Yes      | —       |
 
 **Generates:**
 | File | Content |
@@ -239,6 +239,7 @@ clarchitect project go-chi
 Running `clarchitect project go-chi` with project name `my-api` and module `github.com/me/my-api` produces:
 
 **`CLAUDE.md`:**
+
 ```markdown
 # my-api
 
@@ -247,14 +248,14 @@ Go + Chi router. Module: `github.com/me/my-api`.
 ## Architecture
 
 cmd/
-└── server/         # Application entry point
+└── server/ # Application entry point
 internal/
-├── handler/        # HTTP handlers
-├── service/        # Business logic
-├── repository/     # Data access
-├── middleware/      # HTTP middleware
-├── model/          # Domain types
-└── config/         # Configuration loading
+├── handler/ # HTTP handlers
+├── service/ # Business logic
+├── repository/ # Data access
+├── middleware/ # HTTP middleware
+├── model/ # Domain types
+└── config/ # Configuration loading
 
 ## Commands
 
@@ -333,4 +334,4 @@ templates/                       # Embedded via go:embed
 
 ## License
 
-[MIT](LICENSE) - Astrocatto
+[MIT](LICENSE) - Fatstruct
